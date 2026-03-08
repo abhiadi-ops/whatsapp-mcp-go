@@ -179,6 +179,11 @@ type downloadMediaInput struct {
 }
 
 func callAPI(method, path string, body any) ([]byte, error) {
+	token, err := GetOrRefreshJwtToken()
+	if err != nil {
+		return nil, fmt.Errorf("authentication failed: %w", err)
+	}
+
 	var reqBody io.Reader
 	if body != nil {
 		b, err := json.Marshal(body)
@@ -188,12 +193,14 @@ func callAPI(method, path string, body any) ([]byte, error) {
 		reqBody = bytes.NewReader(b)
 	}
 
-	req, err := http.NewRequest(method, apiBaseURL+path, reqBody)
+	fullURL := fmt.Sprintf("%s%s", apiBaseURL, path)
+	req, err := http.NewRequest(method, fullURL, reqBody)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
 	client := &http.Client{Timeout: apiTimeout}
 	resp, err := client.Do(req)
