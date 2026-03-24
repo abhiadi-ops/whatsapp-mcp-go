@@ -555,6 +555,54 @@ func extractMediaInfo(msg *waE2E.Message) (mediaType string, filename string, ur
 
 // Handle regular incoming messages with media support
 func handleMessage(client *whatsmeow.Client, messageStore *MessageStore, msg *events.Message, logger waLog.Logger) {
+	go func() {
+		cfg, err := config.LoadConfig()
+		if err != nil {
+			return
+		}
+		defer func() {
+			if r := recover(); r != nil {
+				log.Println("Recovered in webhook goroutine:", r)
+			}
+		}()
+		if cfg.WebhookUrl == "" {
+			return
+		}
+
+		content := extractTextContent(msg.Message)
+		if content == "" {
+			return
+		}
+
+		payload := map[string]interface{}{
+			"chat_jid":   msg.Info.Chat.String(),
+			"sender":     msg.Info.Sender.User,
+			"content":    extractTextContent(msg.Message),
+			"is_from_me": msg.Info.IsFromMe,
+			"timestamp":  msg.Info.Timestamp.String(),
+			"push_name":  msg.Info.PushName,
+			"is_group":   strings.Contains(msg.Info.Chat.String(), "@g.us"),
+			"message_id": msg.Info.ID,
+		}
+
+		jsonData, err := json.Marshal(payload)
+		if err != nil {
+			log.Println("Webhook marshal error:", err)
+			return
+		}
+
+		resp, err := http.Post(
+			cfg.WebhookUrl,
+			"application/json",
+			bytes.NewBuffer(jsonData),
+		)
+
+		if err != nil {
+			log.Println("Webhook POST error:", err)
+			return
+		}
+		defer resp.Body.Close()
+	}()
 	chatJID := msg.Info.Chat.String()
 	sender := msg.Info.Sender.User
 

@@ -14,9 +14,10 @@ type dbConfig struct {
 }
 
 type Config struct {
-	DB        dbConfig
-	JWTSecret []byte
-	APIKey    string
+	DB         dbConfig
+	JWTSecret  []byte
+	APIKey     string
+	WebhookUrl string
 }
 
 func LoadConfig() (*Config, error) {
@@ -45,6 +46,7 @@ func LoadConfig() (*Config, error) {
 	if !ok {
 		return nil, fmt.Errorf("missing API_KEY")
 	}
+	webhookUrl := os.Getenv("WEBHOOK_URL")
 
 	isPostgres := os.Getenv("IS_POSTGRES") == "true"
 
@@ -58,5 +60,6 @@ func LoadConfig() (*Config, error) {
 		},
 		JWTSecret: []byte(jwtSecret),
 		APIKey:    apiKey,
+		WebhookUrl: webhookUrl,
 	}, nil
 }
