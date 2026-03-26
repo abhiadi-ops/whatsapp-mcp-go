@@ -82,23 +82,20 @@ func InitMcpTool() {
 		Description: "Download media from a WhatsApp message and return local file path.",
 	}, downloadMediaHandler)
 
-	isSSE := strings.ToLower(ReadEnv("IS_SSE", "false")) == "true" ||
-		strings.ToLower(ReadEnv("IS_SSE", "0")) == "1"
+	isHttp := strings.ToLower(ReadEnv("IS_HTTP", "false")) == "true" ||
+		strings.ToLower(ReadEnv("IS_HTTP", "0")) == "1"
 
 	ctx := context.Background()
 
-	if isSSE {
-		addr := ReadEnv("SSE_BASE_URL", "0.0.0.0:5777")
-		slog.Info("Starting WhatsApp MCP HTTP server (SSE)", "addr", addr)
+	if isHttp {
+		addr := ReadEnv("HTTP_BASE_URL", "0.0.0.0:5777")
+		slog.Info("Starting WhatsApp MCP HTTP streaming", "addr", addr)
 
-		handler := mcp.NewSSEHandler(func(request *http.Request) *mcp.Server {
-			// A logic can be added here to return different servers based on URL path
-			// For now, it returns the same WhatsApp server for the root/default path
+		handler := mcp.NewStreamableHTTPHandler(func(req *http.Request) *mcp.Server {
 			return server
 		}, nil)
-
 		if err := http.ListenAndServe(addr, handler); err != nil {
-			log.Fatalf("http server failed: %v", err)
+			log.Fatalf("Server failed: %v", err)
 		}
 	} else {
 		slog.Info("Starting WhatsApp MCP server in stdio mode")

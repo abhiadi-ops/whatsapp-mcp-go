@@ -4,7 +4,7 @@ A lightweight, WhatsApp MCP server and bridge — rewritten entirely in Go for s
 
 This project is a re‑imagining of the original **[whatsapp-mcp](https://github.com/lharries/whatsapp-mcp)** by **lharries**, who created the first WhatsApp MCP bridge using a Python MCP server and a Go WhatsApp client powered by **WhatsMeow**. Their work demonstrated how Claude Desktop could interact with WhatsApp through the MCP protocol, and this project would not exist without that foundation.
 
-Start `whatsapp-bridge` -> then run `whatsapp-mcp-server` in your preferred mode (STDIO or SSE).
+Start `whatsapp-bridge` -> then run `whatsapp-mcp-server` in your preferred mode (STDIO or HTTP).
 
 | Connector | Chat |
 |------------|----------|
@@ -42,7 +42,7 @@ Start `whatsapp-bridge` -> then run `whatsapp-mcp-server` in your preferred mode
        cd whatsapp-mcp-server
        go build -o whatsapp-mcp
        ```
-      Copy the below json with the appropriate {{PATH}} values:
+      Copy the below json with the appropriate {{PROJECT_BASE_PATH}} value:
       ```json
       {
            "mcpServers": {
@@ -87,7 +87,7 @@ If you're running this project on Windows, be aware that `go-sqlite3` requires *
    ```bash
    cd whatsapp-bridge
    go env -w CGO_ENABLED=1
-   go run main.go
+   go run main.go # or use this to enabled webhook and http streaming, `WEBHOOK_URL=http://192.168.178.119:5777/sse IS_HTTP=true go run main.go`
    ```
 
 OR
@@ -220,7 +220,7 @@ Moving all database logic into the bridge
 * **SQLite or PostgreSQL — Your Choice**
 The original project only supported SQLite.
 
-* **Two Communication Modes: STDIO + SSE** The original project was built only for Claude Desktop (STDIO MCP). This makes the project usable far beyond Claude Desktop.
+* **Two Communication Modes: STDIO + HTTP** The original project was built only for Claude Desktop (STDIO MCP). This makes the project usable far beyond Claude Desktop.
 
 * **Docker Support** This makes deployment trivial on:
 - servers  
@@ -236,7 +236,7 @@ The original project only supported SQLite.
 - Pure Go MCP server
 - Clean API boundary between MCP and bridge
 - SQLite or PostgreSQL support
-- STDIO + SSE modes
+- STDIO + HTTP modes
 - Lightweight Docker image
 - Easy deployment with Docker Compose
 - No Python dependencies
@@ -273,7 +273,7 @@ Choose this version if you want:
 - a portable binary  
 - Docker support  
 - PostgreSQL support  
-- SSE support for automation workflows  
+- HTTP support for automation workflows  
 - a more maintainable and extensible project  
 
 The goal is not to replace the original project but to offer an alternative that fits different needs — especially for developers who prefer Go or want to deploy MCP‑based WhatsApp automation in production environments.
